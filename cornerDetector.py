@@ -2,14 +2,11 @@ import numpy as np
 from sklearn import linear_model
 from sklearn.cluster import DBSCAN
 from itertools import compress
+from matplotlib import pyplot as plt
 
 class cornerDetector():
 	"""Detects page corners in a thresholded image"""
-	__image = None
-	__width = 0
-	__height = 0
 	edges = []
-	__corners = None
 
 	def __init__(self, image):
 		self.__image = image
@@ -18,13 +15,10 @@ class cornerDetector():
 		self.detectCorners()
 
 	def detectCorners(self):
-		if self.__corners!=None:
+		if hasattr(self,'__corners'):
 			return self.__corners
-		x = 0
-		y = 0
-		prevEdge = None
-		firstEdge = None
-		edgePairs = []
+		x,y = 0,0
+		currEdge = None
 		seeds = [(self.__width/2,0,1,0,0,1), (self.__width,self.__height/2,0,1,-1,0),\
 				(self.__width/2,self.__height,-1,0,0,-1), (0,self.__height/2,0,-1,1,0)]
 		for seed in seeds:
@@ -32,22 +26,27 @@ class cornerDetector():
 			if currEdge==None:
 				return [[self.__width,0],[self.__width,self.__height],\
 						[0,self.__height],[0,0]]
-			if firstEdge == None:
-				firstEdge = currEdge
-			if prevEdge != None:
-				edgePairs.append((prevEdge,currEdge))
-			prevEdge = currEdge
 			self.edges.append(currEdge)
-		edgePairs.append((currEdge,firstEdge))
-		corners = self.getCorners(edgePairs)
+		corners = self.getCorners(self.edges)
 		self.__corners = corners
 		return corners
 
 	def findEdge(self,seed):
+		Xi,Yi,Yli = self.collectEdgePoints(seed)
+		plt.scatter(Xi,Yi)
+		Xi,Yi = self.getBiggestCluster(Xi,Yi,Yli)
+		model = linear_model.RANSACRegressor(linear_model.LinearRegression())
+		try:
+			model.fit(Xi,Yi)
+		except ValueError:
+			print("No edge for seed")
+			print(seed)
+			return None
+		return (model.estimator_.coef_[0], model.estimator_.intercept_)
+
+	def collectEdgePoints(self,seed):
 		x0,y0,xdir,ydir,xpdir,ypdir = seed
-		Xi = []
-		Yi = []
-		Yli = []
+		Xi, Yi, Yli = [],[],[]
 		if xdir!=0:
 			for x in range(x0-(xdir*self.__width/4),x0+(xdir*self.__width/4),xdir):
 				xi,yi = self.dropScanLine(x,y0,xpdir,ypdir)
@@ -60,17 +59,7 @@ class cornerDetector():
 				Xi.append([xi])
 				Yi.append(yi)
 				Yli.append([xi])
-		Xi,Yi = self.getBiggestCluster(Xi,Yi,Yli)
-		model = linear_model.RANSACRegressor(linear_model.LinearRegression())
-		try:
-			model.fit(Xi,Yi)
-		except ValueError:
-			print(Xi)
-			print(Yi)
-			print("No edge for seed")
-			print(seed)
-			return None
-		return (model.estimator_.coef_[0], model.estimator_.intercept_)
+		return Xi, Yi, Yli
 
 	def getBiggestCluster(self,Xi,Yi,Yli):
 		clusters = DBSCAN(15).fit_predict(Yli)
@@ -90,16 +79,18 @@ class cornerDetector():
 		x=x0+xdir
 		y=y0+ydir
 		while x>=0 and x<self.__width and y>=0 and y<self.__height:
-			x=x+xdir
-			y=y+ydir
 			if self.__image[y,x]==0:
 				return (x,y)
+			x=x+xdir
+			y=y+ydir
 		return (x-xdir,y-ydir)
 
-	def getCorners(self,edgePairs):
+	def getCorners(self,edges):
 		corners = []
-		for pair in edgePairs:
-			line1,line2 = pair
+		n = len(edges)
+		for i in range(0,n):
+			line1 = edges[i]
+			line2 = edges[(i+1)%n]
 			corners.append(self.getIntersection(line1,line2))
 		return corners
 
