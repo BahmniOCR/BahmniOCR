@@ -3,7 +3,6 @@ import cv2
 import cornerDetector as cd
 import deskew
 from matplotlib import pyplot as plt
-from scipy import signal
 
 def preprocessImage(img):
 	img = cv2.medianBlur(img,3)

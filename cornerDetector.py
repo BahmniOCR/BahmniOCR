@@ -6,7 +6,6 @@ from matplotlib import pyplot as plt
 
 class cornerDetector():
 	"""Detects page corners in a thresholded image"""
-	edges = []
 
 	def __init__(self, image):
 		self.__image = image
@@ -18,9 +17,9 @@ class cornerDetector():
 		if hasattr(self,'__corners'):
 			return self.__corners
 		x,y = 0,0
-		currEdge = None
 		seeds = [(self.__width/2,0,1,0,0,1), (self.__width,self.__height/2,0,1,-1,0),\
 				(self.__width/2,self.__height,-1,0,0,-1), (0,self.__height/2,0,-1,1,0)]
+		self.edges = []
 		for seed in seeds:
 			currEdge = self.findEdge(seed)
 			if currEdge==None:

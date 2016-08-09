@@ -7,7 +7,7 @@ class segmenter():
 		self.__image = image
 		self.__pim = pim
 		self.__width = width
-		self.__threshold = 255*(width)
+		self.__threshold = 255*width*0.7
 		self.segmentPage()
 
 	def segmentPage(self):
@@ -21,10 +21,13 @@ class segmenter():
 			if (not incr) and hist[i]>=threshold:
 				incr = True
 			if incr and hist[i]>=threshold:
-				hill.append(hist[i])
+				hill.append(i)
 			elif incr and hist[i]<threshold:
 				incr = False
 				hills.append(hill)
 				hill = []
-		peaks = self.getPeaksFromHills(hills)
+		peaks = self.getPeaksFromHills(hist,hills)
 		return peaks
+
+	def getPeaksFromHills(self,hist,hills):
+		
