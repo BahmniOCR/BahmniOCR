@@ -3,6 +3,7 @@ import cv2
 import cornerDetector as cd
 import deskew
 from matplotlib import pyplot as plt
+import segmenter as seg
 
 def preprocessImage(img):
 	img = cv2.medianBlur(img,3)
@@ -29,13 +30,9 @@ def getTextRows(im,pim):
 	hist = np.sum(pim,1)
 	return 1
 
-img = cv2.cvtColor(cv2.imread('form5.jpg'), cv2.COLOR_BGR2RGB)
+img = cv2.cvtColor(cv2.imread('form4.jpg'), cv2.COLOR_BGR2RGB)
 im = preprocessImage(img)
 img = deskewImage(img,im)
 pim = preprocessImage(img)
-hist = np.sum(pim,1)
-#print ",".join([str(x) for x in hist] )
-plt.plot(hist)
-plt.show()
-plt.imshow(img)
-plt.show()
+segm = seg.segmenter(img,pim)
+segm.displaySegments()

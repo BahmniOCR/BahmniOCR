@@ -4,13 +4,7 @@ import cv2
 
 class deskewer():
 	"""Deskews page image given image, skewed corner point coordinates and aspect ratio"""
-	__image = None
-	__corners = []
 	__aspect = 1.414
-	__area = -1
-	__w = -1
-	__h = -1
-	__transImage = None
 
 	def __init__(self, image, corners, aspect):
 		self.__image = image
@@ -19,7 +13,7 @@ class deskewer():
 		self.deskew()
 
 	def deskew(self):
-		if self.__transImage!=None:
+		if hasattr(self,'__transImage'):
 			return self.__transImage
 		transCorners = self.getTransformedCoords()
 		fCorners = np.float32(self.__corners)
@@ -38,7 +32,7 @@ class deskewer():
 		return [[w,0],[w,h],[0,h],[0,0]]
 
 	def getArea(self):
-		if self.__area>0:
+		if hasattr(self,'__area'):
 			return self.__area
 		area = 0
 		n = len(self.__corners)
