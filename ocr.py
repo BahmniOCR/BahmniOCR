@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 import CornerDetector as cd
 import Deskew
 import Segmenter as seg
+import VerticalSegmenter as vseg
 
 
 def preprocess_image(image):
@@ -40,3 +41,8 @@ plt.show()
 pim = preprocess_image(img)
 segmenter = seg.Segmenter(img, pim)
 segmenter.display_segments()
+seg_images = segmenter.get_segment_images()
+for seg_image in seg_images:
+    pseg_image = preprocess_image(seg_image)
+    vert_segmenter = vseg.VerticalSegmenter(seg_image, pseg_image)
+    vert_segmenter.display_segments()
