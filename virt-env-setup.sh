@@ -2,6 +2,8 @@
 
 ## Setting up virtual env
 
+pushd .
+
 # Install virtualenv
 sudo pip install virtualenv
 
@@ -21,9 +23,7 @@ cp frameworkpython ~/.virtualenvs/BahmniOCR/bin
 # Activate virtual env
 source ~/.virtualenvs/BahmniOCR/bin/activate
 
-# Using the virtual env
-cd ~/dev/BahmniOCR
-
 # Install dependencies
+popd
 pip install -r requirements.txt
 
