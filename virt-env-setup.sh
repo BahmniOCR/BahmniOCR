@@ -17,6 +17,9 @@ cd ~/.virtualenvs/BahmniOCR/bin
 ln -s /usr/local/lib/python2.7/site-packages/cv.py
 ln -s /usr/local/lib/python2.7/site-packages/cv2.so
 
+# Move to current directory
+popd
+
 # Setup framework python
 cp frameworkpython ~/.virtualenvs/BahmniOCR/bin
 
@@ -24,6 +27,5 @@ cp frameworkpython ~/.virtualenvs/BahmniOCR/bin
 source ~/.virtualenvs/BahmniOCR/bin/activate
 
 # Install dependencies
-popd
 pip install -r requirements.txt
 

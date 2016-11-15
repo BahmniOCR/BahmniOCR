@@ -30,13 +30,14 @@ class VerticalSegmenter:
     def get_segments(self):
         if hasattr(self, '__segments'):
             return self.__segments
-        hist = np.sum(self.__pim, 0)
+        hist = np.sum(self.__pim, axis=0)
         smhist = sg.medfilt(hist, 21)
         diffhist = np.diff(smhist)
         peaks = self.get_peaks(diffhist)
         peaks = self.merge_nearby_peaks(peaks)
         if len(peaks) <= 1:
-            return []
+            self.__segments = []
+            return self.__segments
         self.__segments = [(peaks[i - 1], peaks[i] + self.__slack) for i in range(1, len(peaks))]
         self.__segments.insert(0, (0, peaks[0] + self.__slack))
         self.__segments.append((peaks[-1], self.__height))

@@ -41,7 +41,7 @@ class Segmenter:
     def get_segments(self):
         if hasattr(self, '__segments'):
             return self.__segments
-        hist = np.sum(self.__pim, 1)
+        hist = np.sum(self.__pim, axis=1)
         smhist = sg.medfilt(hist, 21)
         diffhist = np.diff(smhist)
         peaks = self.get_peaks(diffhist)
