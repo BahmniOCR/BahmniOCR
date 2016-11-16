@@ -1,31 +1,36 @@
 #! /bin/bash
 
-## Setting up virtual env
+# Setting up a virtual env for BahmniOCR
 
-pushd .
+PROJECT_DIR=$HOME/dev/BahmniOCR
+VIRT_BIN=$HOME/.virtualenvs/BahmniOCR/bin
 
 # Install virtualenv
-sudo pip install virtualenv
+pip install --user virtualenv
+
+# TODO The following line works on macOS only.
+export PATH=$PATH:$HOME/Library/Python/2.7/bin
 
 # Create virtualenv for BahmniOCR
-mkdir ~/.virtualenvs
-cd ~/.virtualenvs
+mkdir $HOME/.virtualenvs
+cd $HOME/.virtualenvs
 virtualenv BahmniOCR
 
-# Symlink OpenCV
-cd ~/.virtualenvs/BahmniOCR/bin
-ln -s /usr/local/lib/python2.7/site-packages/cv.py
-ln -s /usr/local/lib/python2.7/site-packages/cv2.so
-
-# Move to current directory
-popd
-
-# Setup framework python
-cp frameworkpython ~/.virtualenvs/BahmniOCR/bin
+cd $VIRT_BIN
 
 # Activate virtual env
-source ~/.virtualenvs/BahmniOCR/bin/activate
+source activate
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -r $PROJECT_DIR/requirements.txt
+
+# Setup framework python
+cp $PROJECT_DIR/frameworkpython $VIRT_BIN
+mv python python.bak
+mv frameworkpython python
+
+# Symlink OpenCV
+cd $HOME/.virtualenvs/BahmniOCR/lib/python2.7/site-packages
+ln -s /usr/local/lib/python2.7/site-packages/cv.py
+ln -s /usr/local/lib/python2.7/site-packages/cv2.so
 
