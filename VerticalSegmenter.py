@@ -15,21 +15,17 @@ class VerticalSegmenter:
         self.__pim = pim
         self.__threshold = 15
         self.__slack = 5
-        self.get_segments()
+        self.__segments = []
 
     def display_segments(self):
-        if not hasattr(self, '__segments'):
-            self.get_segments()
-        for segment in self.__segments:
+        for segment in self.segments:
             left, right = segment
             cv2.line(self.__image, (left, 0), (left, self.__height), (0, 0, 255), 1)
             cv2.line(self.__image, (right, 0), (right, self.__height), (0, 0, 255), 1)
         plt.imshow(self.__image)
         plt.show()
 
-    def get_segments(self):
-        if hasattr(self, '__segments'):
-            return self.__segments
+    def create_segments(self):
         hist = np.sum(self.__pim, axis=0)
         smhist = sg.medfilt(hist, 21)
         diffhist = np.diff(smhist)
@@ -37,10 +33,15 @@ class VerticalSegmenter:
         peaks = self.merge_nearby_peaks(peaks)
         if len(peaks) <= 1:
             self.__segments = []
-            return self.__segments
-        self.__segments = [(peaks[i - 1], peaks[i] + self.__slack) for i in range(1, len(peaks))]
-        self.__segments.insert(0, (0, peaks[0] + self.__slack))
-        self.__segments.append((peaks[-1], self.__height))
+        else:
+            self.__segments = [(peaks[i - 1], peaks[i] + self.__slack) for i in range(1, len(peaks))]
+            self.__segments.insert(0, (0, peaks[0] + self.__slack))
+            self.__segments.append((peaks[-1], self.__height))
+
+    @property
+    def segments(self):
+        if not self.__segments:
+            self.create_segments()
         return self.__segments
 
     def get_peaks(self, diffhist):
