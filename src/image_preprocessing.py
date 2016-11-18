@@ -1,10 +1,8 @@
+import deskew
 import cv2
 from matplotlib import pyplot as plt
 
-import CornerDetector as cd
-import Deskew
-import Segmenter as seg
-import VerticalSegmenter as vseg
+from corner_detector import CornerDetector
 
 
 def preprocess_image(image):
@@ -16,7 +14,7 @@ def preprocess_image(image):
 
 
 def deskew_image(im, pim):
-    cornerdetector = cd.CornerDetector(pim)
+    cornerdetector = CornerDetector(pim)
     corners = cornerdetector.detect_corners()
     for i in range(0, len(corners)):
         corner = corners[i]
@@ -26,23 +24,6 @@ def deskew_image(im, pim):
         cv2.line(im, tuple(corner), tuple(nextcorner), (130, 210, 210), 5)
     plt.imshow(im, cmap='gray')
     plt.show()
-    deskewer = Deskew.Deskewer(im, corners, 1.414)
+    deskewer = deskew.Deskewer(im, corners, 1.414)
     transformedimage = deskewer.deskew()
     return transformedimage
-
-
-img = cv2.cvtColor(cv2.imread('form5.jpg'), cv2.COLOR_BGR2RGB)
-plt.imshow(img)
-plt.show()
-im = preprocess_image(img)
-img = deskew_image(img, im)
-plt.imshow(img)
-plt.show()
-pim = preprocess_image(img)
-segmenter = seg.Segmenter(img, pim)
-segmenter.display_segments()
-seg_images = segmenter.get_segment_images()
-for seg_image in seg_images:
-    pseg_image = preprocess_image(seg_image)
-    vert_segmenter = vseg.VerticalSegmenter(seg_image, pseg_image)
-    vert_segmenter.display_segments()
