@@ -2,7 +2,7 @@
 
 # Setting up a virtual env for BahmniOCR
 
-PROJECT_DIR=$HOME/dev/BahmniOCR
+PROJECT_DIR=$(pwd)
 VIRT_BIN=$HOME/.virtualenvs/BahmniOCR/bin
 
 # Install virtualenv
