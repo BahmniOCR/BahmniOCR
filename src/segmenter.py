@@ -17,14 +17,6 @@ class Segmenter:
         self._slack = 5
         self._segments = []
 
-    def display_segments(self):
-        for segment in self.segments:
-            left, right = segment
-            cv2.line(self._image, (left, 0), (left, self._height), (0, 0, 255), 1)
-            cv2.line(self._image, (right, 0), (right, self._height), (0, 0, 255), 1)
-        plt.imshow(self._image)
-        plt.show()
-
     def create_segments(self):
         hist = np.sum(self._pim, axis=self._axis)
         smhist = sg.medfilt(hist, 21)
@@ -66,6 +58,14 @@ class WordSegmenter(Segmenter):
     def __init__(self, image, pim):
         Segmenter.__init__(self, image, pim)
         self._axis = 0
+
+    def display_segments(self):
+        for segment in self.segments:
+            left, right = segment
+            cv2.line(self._image, (left, 0), (left, self._height), (0, 0, 255), 1)
+            cv2.line(self._image, (right, 0), (right, self._height), (0, 0, 255), 1)
+        plt.imshow(self._image)
+        plt.show()
 
 
 class LineSegmenter(Segmenter):
