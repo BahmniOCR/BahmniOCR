@@ -1,8 +1,9 @@
+from itertools import compress
+
 import numpy as np
+from matplotlib import pyplot as plt
 from sklearn import linear_model
 from sklearn.cluster import DBSCAN
-from itertools import compress
-from matplotlib import pyplot as plt
 
 
 # noinspection SpellCheckingInspection

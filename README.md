@@ -1,5 +1,9 @@
 # BahmniOCR
 
+## Purpose
+
+Digitize data from hand-filled hospital forms.
+
 ## Installation
 
 1. Install tesseract and OpenCV.

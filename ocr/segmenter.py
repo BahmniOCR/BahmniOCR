@@ -1,22 +1,27 @@
-import numpy as np
-from scipy import signal as sg
-import cv2
-from matplotlib import pyplot as plt
 import copy
-from image_preprocessing import debugPlot
-from image_preprocessing import debugImage
+
+import cv2
+import numpy as np
+from matplotlib import pyplot as plt
+from scipy import signal as sg
+
+from debug_utils import Debuggable
+from image_preprocessing import ImagePreprocessor
 
 
-class Segmenter:
+class Segmenter(Debuggable):
     """Segments text based on white spaces"""
 
     def __init__(self, image, pim):
+        Debuggable.__init__(self)
+        # self._debug = True
         self._image = image
         self._width = np.shape(image)[1]
         self._height = np.shape(image)[0]
         self._pim = 255 - pim
-        debugImage(self._pim)
         self._threshold = 15
+        self._peak_threshold = None
+        self._axis = None
         self._slack = 5
         self._segments = []
 
@@ -24,15 +29,15 @@ class Segmenter:
         hist = np.sum(self._pim, axis=self._axis)
         smhist = sg.medfilt(hist, 21)
         diffhist = np.diff(smhist)
-        debugPlot(diffhist)
+        self.debug_plot(diffhist)
+
         peaks = self.get_negative_peaks(diffhist)
-        print("Length of negative peaks")
-        print(peaks)
-        print(len(peaks))
+        self.log("Negative peaks")
+        self.log(peaks)
+
         peaks = self.merge_nearby_peaks(peaks, diffhist)
-        print("Length of merged negative peaks")
-        print(peaks)
-        print(len(peaks))
+        self.log("Merged negative peaks")
+        self.log(peaks)
 
         if len(peaks) <= 1:
             self._segments = []
@@ -69,22 +74,6 @@ class Segmenter:
         return mergedpeaks
 
 
-class WordSegmenter(Segmenter):
-
-    def __init__(self, image, pim):
-        Segmenter.__init__(self, image, pim)
-        self._axis = 0
-        self._peak_threshold = 255 * 4
-
-    def display_segments(self):
-        for segment in self.segments:
-            left, right = segment
-            cv2.line(self._image, (left, 0), (left, self._height), (0, 0, 255), 1)
-            cv2.line(self._image, (right, 0), (right, self._height), (0, 0, 255), 1)
-        plt.imshow(self._image)
-        plt.show()
-
-
 class LineSegmenter(Segmenter):
 
     def __init__(self, image, pim):
@@ -105,5 +94,23 @@ class LineSegmenter(Segmenter):
             top, bottom = segment
             cv2.line(disp_image, (0, top), (self._width, top), (0, 0, 255), 1)
             cv2.line(disp_image, (0, bottom), (self._width, bottom), (0, 0, 255), 1)
-        plt.imshow(disp_image)
-        plt.show()
+        self.debug_image(disp_image)
+
+
+class WordSegmenter(Segmenter):
+
+    def __init__(self, image, pim):
+        Segmenter.__init__(self, image, pim)
+        self._debug = True
+        self._axis = 0
+        self._peak_threshold = 255 * 4
+        self.ip = ImagePreprocessor()
+        self._pim = self.ip.dilate_erode(255 - pim)
+        self.debug_image(self._pim, cmap='gray')
+
+    def display_segments(self):
+        for segment in self.segments:
+            left, right = segment
+            cv2.line(self._image, (left, 0), (left, self._height), (0, 0, 255), 1)
+            cv2.line(self._image, (right, 0), (right, self._height), (0, 0, 255), 1)
+        self.debug_image(self._image)
