@@ -3,6 +3,8 @@ from scipy import signal as sg
 import cv2
 from matplotlib import pyplot as plt
 import copy
+from image_preprocessing import debugPlot
+from image_preprocessing import debugImage
 
 
 class Segmenter:
@@ -12,7 +14,8 @@ class Segmenter:
         self._image = image
         self._width = np.shape(image)[1]
         self._height = np.shape(image)[0]
-        self._pim = pim
+        self._pim = 255 - pim
+        debugImage(self._pim)
         self._threshold = 15
         self._slack = 5
         self._segments = []
@@ -21,13 +24,22 @@ class Segmenter:
         hist = np.sum(self._pim, axis=self._axis)
         smhist = sg.medfilt(hist, 21)
         diffhist = np.diff(smhist)
-        peaks = self.get_peaks(diffhist)
-        peaks = self.merge_nearby_peaks(peaks)
+        debugPlot(diffhist)
+        peaks = self.get_negative_peaks(diffhist)
+        print("Length of negative peaks")
+        print(peaks)
+        print(len(peaks))
+        peaks = self.merge_nearby_peaks(peaks, diffhist)
+        print("Length of merged negative peaks")
+        print(peaks)
+        print(len(peaks))
+
         if len(peaks) <= 1:
             self._segments = []
         else:
-            self._segments = [(peaks[i - 1], peaks[i] + self._slack) for i in range(1, len(peaks))]
             self._segments.insert(0, (0, peaks[0] + self._slack))
+            for i in range(1, len(peaks)):
+                self.segments.append((peaks[i - 1], peaks[i] + self._slack))
             self._segments.append((peaks[-1], self._height))
 
     @property
@@ -36,19 +48,23 @@ class Segmenter:
             self.create_segments()
         return self._segments
 
-    def get_peaks(self, diffhist):
-        peaks = [i for i in range(1, len(diffhist) - 2)
-                 if diffhist[i - 1] < diffhist[i]
-                 and diffhist[i + 1] < diffhist[i]
-                 and diffhist[i] > 255 * 10]
-        mergedpeaks = self.merge_nearby_peaks(peaks)
-        return mergedpeaks
+    def get_positive_peaks(self, diffhist):
+        return [i for i in range(1, len(diffhist) - 2)
+                if diffhist[i - 1] < diffhist[i]
+                and diffhist[i + 1] < diffhist[i]
+                and diffhist[i] > self._peak_threshold]
 
-    def merge_nearby_peaks(self, peaks):
+    def get_negative_peaks(self, diffhist):
+        return [i for i in range(1, len(diffhist) - 1)
+                if diffhist[i - 1] > diffhist[i]
+                and diffhist[i + 1] > diffhist[i] < -self._peak_threshold]
+
+    def merge_nearby_peaks(self, peaks, diffhist):
         if len(peaks) == 0:
             return peaks
-        mergedpeaks = [peaks[i - 1] for i in range(1, len(peaks))
-                       if peaks[i] - peaks[i - 1] > self._threshold]
+        mergedpeaks = [peaks[i-1] for i in range(1, len(peaks))
+                       if diffhist[peaks[i]] - diffhist[peaks[i - 1]] > -self._threshold]
+        mergedpeaks.insert(0, peaks[0])
         mergedpeaks.append(peaks[-1])
         return mergedpeaks
 
@@ -58,6 +74,7 @@ class WordSegmenter(Segmenter):
     def __init__(self, image, pim):
         Segmenter.__init__(self, image, pim)
         self._axis = 0
+        self._peak_threshold = 255 * 4
 
     def display_segments(self):
         for segment in self.segments:
@@ -73,6 +90,7 @@ class LineSegmenter(Segmenter):
     def __init__(self, image, pim):
         Segmenter.__init__(self, image, pim)
         self._axis = 1
+        self._peak_threshold = 255 * 10
 
     def get_segment_images(self):
         images = []

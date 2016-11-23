@@ -42,6 +42,9 @@ def debugPlot(array):
     plt.plot(np.arange(0, len(array), 1), array)
     plt.show()
 
+def debugImage(image):
+    plt.imshow(image)
+    plt.show()
 
 # Erode and Dilate image
 def dilate_erode(img, num_iterations):
